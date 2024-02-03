@@ -3,8 +3,9 @@ image: debian:latest
 stages:
   - deploy
 
-# assuming GitLab CI/CD variables are set (SSH_PRIVATE_KEY, SSH_USER, SSH_HOST, SSH_PORT, WORK_DIR, THEME_NAME)
-# develop is manual
+# requires GitLab CI/CD variables to be set (SSH_PRIVATE_KEY, SSH_USER, SSH_HOST, SSH_PORT, WORK_DIR, THEME_NAME)
+# assumes default nodejs build script in themes/your-theme
+# develop deployment is manual
 deploy_main:
     stage: deploy
     before_script:
