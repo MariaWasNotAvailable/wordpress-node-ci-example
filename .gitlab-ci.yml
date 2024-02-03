@@ -1,0 +1,39 @@
+image: debian:latest
+
+stages:
+  - deploy
+
+# assuming GitLab CI/CD variables are set (SSH_PRIVATE_KEY, SSH_USER, SSH_HOST, SSH_PORT, WORK_DIR, THEME_NAME)
+# develop is manual
+deploy_main:
+    stage: deploy
+    before_script:
+        - apt-get -qq update
+        - apt-get -y install ssh nodejs npm
+        - mkdir -p ~/.ssh
+        - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
+        - chmod 600 ~/.ssh/id_rsa
+        - ssh-keyscan -p $SSH_PORT $SSH_HOST > ~/.ssh/known_hosts
+    script:
+        - ssh $SSH_USER@$SSH_HOST -p $SSH_PORT 'cd $WORK_DIR && git checkout main && git pull'
+        - ssh $SSH_USER@$SSH_HOST -p $SSH_PORT 'cd "wp-content/themes/$THEME_NAME" && npm install && npm run build && exit'
+    after_script:
+        - rm -rf ~/.ssh
+    only:
+        - main
+
+deploy_develop:
+    stage: deploy
+    before_script:
+        - apt-get -qq update
+        - apt-get -y install ssh nodejs npm
+        - mkdir -p ~/.ssh
+        - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
+        - chmod 600 ~/.ssh/id_rsa
+        - ssh-keyscan -p $SSH_PORT $SSH_HOST > ~/.ssh/known_hosts
+    script:
+        - ssh $SSH_USER@$SSH_HOST -p$SSH_PORT 'cd $WORK_DIR && git checkout develop && git pull'
+        - ssh $SSH_USER@$SSH_HOST -p$SSH_PORT 'cd "wp-content/themes/$THEME_NAME" && npm install && npm run build && exit'
+    after_script:
+        - rm -rf ~/.ssh
+    when: manual
